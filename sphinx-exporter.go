@@ -8,7 +8,7 @@ import (
   "strconv"
   "time"
   "flag"
-  _ "github.com/go-sql-driver/mysql"
+  _ "github.com/jessp01/sphinxql"
   "github.com/prometheus/client_golang/prometheus"
   "github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -46,7 +46,7 @@ func newGaugeVec(gaugeKey string, gaugeName string, gaugeHelp string) {
 
 func getSphinxConnection() *sql.DB {
 sphinxUp.Set(0);
-  db, err := sql.Open("mysql", "@tcp(" + *sphinxIp + ":" + *sphinxPort + ")/")
+  db, err := sql.Open("sphinxql", "@tcp(" + *sphinxIp + ":" + *sphinxPort + ")/")
   if err != nil {
     logger.Println("%s", err);
     return nil
@@ -155,6 +155,7 @@ func setStats() {
 
 func init() {
   prometheus.MustRegister(sphinxUp);
+
   newGaugeVec("indexed_documents", "sphinx_indexed_documents", "Number of documents indexed")
   newGaugeVec("indexed_bytes", "sphinx_indexed_bytes", "Indexed Bytes")
   newGaugeVec("field_tokens_title", "sphinx_field_tokens_title", "Sums of per-field length titles over the entire index")
