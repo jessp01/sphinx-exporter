@@ -19,6 +19,10 @@ var (
     Name: "sphinx_index_count",
     Help: "Number of indexes",
   })
+  sphinxUp = prometheus.NewGauge(prometheus.GaugeOpts{
+    Name: "sphinx_up",
+    Help: "Could the Sphinx daemon be reached",
+  })
 
   previousIndexes = make(map[string]bool)
 
@@ -41,6 +45,7 @@ func newGaugeVec(gaugeKey string, gaugeName string, gaugeHelp string) {
 }
 
 func getSphinxConnection() *sql.DB {
+sphinxUp.Set(0);
   db, err := sql.Open("mysql", "@tcp(" + *sphinxIp + ":" + *sphinxPort + ")/")
   if err != nil {
     logger.Println("%s", err);
@@ -51,6 +56,7 @@ func getSphinxConnection() *sql.DB {
     logger.Println("%s", err);
     return nil
   }
+sphinxUp.Set(1);
   
   return db
 }
@@ -148,6 +154,7 @@ func setStats() {
 }
 
 func init() {
+  prometheus.MustRegister(sphinxUp);
   newGaugeVec("indexed_documents", "sphinx_indexed_documents", "Number of documents indexed")
   newGaugeVec("indexed_bytes", "sphinx_indexed_bytes", "Indexed Bytes")
   newGaugeVec("field_tokens_title", "sphinx_field_tokens_title", "Sums of per-field length titles over the entire index")
